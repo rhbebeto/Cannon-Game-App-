@@ -1,21 +1,17 @@
 package com.deitel.cannongame;
 
-public class Target extends GameElement {
-    private int hitReward; // the hit reward for this target
-
-    // constructor
-    public Target(CannonView view, int color, int hitReward, int x, int y,
-                  int width, int length, float velocityY) {
-
-
-        super(view, color, CannonView.TARGET_SOUND_ID, x, y, width, length,
-                velocityY);
-
-        this.hitReward = hitReward;
-    }
-
-    // returns the hit reward for this Target
-    public int getHitReward() {
-        return hitReward;
-    }
+public class Blocker extends GameElement {
+        private int missPenalty; // the miss penalty for this Blocker
+        // constructor
+        public Blocker(CannonView view, int color, int missPenalty, int x,
+                       int y, int width, int length, float velocityY) {
+            super(view, color, CannonView.BLOCKER_SOUND_ID, x, y, width, length,
+                    velocityY);
+            this.missPenalty = missPenalty;
+        }
+        // returns the miss penalty for this Blocker
+        public int getMissPenalty() {
+            return missPenalty;
+        }
 }
+
