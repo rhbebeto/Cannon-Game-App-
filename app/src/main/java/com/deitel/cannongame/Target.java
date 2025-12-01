@@ -19,4 +19,4 @@ public class Target extends GameElement {
         return hitReward;
     }
 }
-}
+
