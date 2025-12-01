@@ -383,8 +383,120 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
         }
     }
 
+    // stops the game: called by CannonGameFragment's onPause method
+    public void stopGame() {
+        if (cannonThread != null)
+            cannonThread.setRunning(false); // tell thread to terminate
+    }
+
+    // release resources: called by CannonGame's onDestroy method
+    public void releaseResources() {
+        soundPool.release(); // release all resources used by the SoundPool
+        soundPool = null;
+    }
+
+    // called when surface changes size
+    @Override
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+        // Corpo vazio porque a aplicação está sempre em modo paisagem
+    }
+
+    // called when surface is first created
+    @Override
+    public void surfaceCreated(SurfaceHolder holder) {
+        if (!dialogIsDisplayed) {
+            newGame(); // set up and start a new game
+
+            cannonThread = new CannonThread(holder); // create thread
+            cannonThread.setRunning(true); // start game running
+            cannonThread.start(); // start the game loop thread
+        }
+    }
+
+    // called when the surface is destroyed
+    @Override
+    public void surfaceDestroyed(SurfaceHolder holder) {
+        // ensure that thread terminates properly
+        boolean retry = true;
+        cannonThread.setRunning(false); // terminate cannonThread
+
+        while (retry) {
+            try {
+                cannonThread.join(); // wait for cannonThread to finish
+                retry = false;
+            }
+            catch (InterruptedException e) {
+                Log.e(TAG, "Thread interrupted", e);
+            }
+        }
+    }
+
+    // called when the user touches the screen in this activity
+    // called when the user touches the screen in this activity
+    @Override
+    public boolean onTouchEvent(MotionEvent e) {
+        // get int representing the type of action which caused this event
+        int action = e.getAction();
+
+        // the user touched the screen or dragged along the screen
+        if (action == MotionEvent.ACTION_DOWN ||
+                action == MotionEvent.ACTION_MOVE) {
+
+            // fire the cannonball toward the touch point
+            alignAndFireCannonball(e);
+        }
+        return true;
+    }
+
+    private class CannonThread extends Thread {
+        private SurfaceHolder surfaceHolder; // for manipulating canvas
+        private boolean threadIsRunning = true; // running by default
+
+        // initializes the surface holder
+        public CannonThread(SurfaceHolder holder) {
+            surfaceHolder = holder;
+            setName("CannonThread");
+        }
+
+        // changes running state
+        public void setRunning(boolean running) {
+            threadIsRunning = running;
+        }
+
+        // controls the game loop
+        @Override
+        public void run() {
+            Canvas canvas = null; // used for drawing
+            long previousFrameTime = System.currentTimeMillis();
+
+            while (threadIsRunning) {
+                try {
+                    // get Canvas for exclusive drawing from this thread
+                    canvas = surfaceHolder.lockCanvas(null);
+
+                    synchronized(surfaceHolder) {
+                        long currentTime = System.currentTimeMillis();
+                        double elapsedTimeMS = currentTime - previousFrameTime;
+
+                        totalElapsedTime += elapsedTimeMS / 1000.0;
+                        updatePositions(elapsedTimeMS); // update game state
+                        testForCollisions(); // test for GameElement collisions
+                        drawGameElements(canvas); // draw using the canvas
+                        previousFrameTime = currentTime; // update previous time
+                    }
+                }
+                finally {
+                    // display canvas's contents on the CannonView
+                    // and enable other threads to use the Canvas
+                    if (canvas != null)
+                        surfaceHolder.unlockCanvasAndPost(canvas);
+                }
+            }
+        }
+    }
 
 
 
 
- }
+
+}
