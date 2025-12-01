@@ -273,4 +273,55 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
         }
 
     }
+
+    // display an AlertDialog when the game ends
+    private void showGameOverDialog(final int messageId) {
+        // DialogFragment to display game stats and start new game
+        final DialogFragment gameResult =
+                new DialogFragment() {
+                    // create an AlertDialog and return it
+                    @Override
+                    public Dialog onCreateDialog(Bundle bundle) {
+                        // create dialog displaying String resource for messageId
+                        AlertDialog.Builder builder =
+                                new AlertDialog.Builder(getActivity());
+                        builder.setTitle(getResources().getString(messageId));
+
+                        // display number of shots fired and total time elapsed
+                        builder.setMessage(getResources().getString(
+                                R.string.results_format, shotsFired, totalElapsedTime));
+
+                        // Set the Positive Button (Reset Game)
+                        builder.setPositiveButton(R.string.reset_game,
+                                new DialogInterface.OnClickListener() {
+                                    // called when "Reset Game" Button is pressed
+                                    @Override
+                                    public void onClick(DialogInterface dialog,
+                                                        int which) {
+                                        dialogIsDisplayed = false;
+                                        newGame(); // set up and start a new game
+                                    }
+                                }
+                        );
+
+                        return builder.create(); // return the AlertDialog
+                    }
+                };
+
+        // in GUI thread, use FragmentManager to display the DialogFragment
+        activity.runOnUiThread(
+                new Runnable() {
+                    public void run() {
+                        showSystemBars(); // exit immersive mode
+                        dialogIsDisplayed = true;
+                        gameResult.setCancelable(false); // modal dialog
+                        gameResult.show(activity.getFragmentManager(), "results");
+                    }
+                }
+        );
+    }
+
+
+
+
 }
