@@ -106,12 +106,12 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
         // create Map of sounds and pre-load sounds
         soundMap = new SparseIntArray(3); // create new SparseIntArray
         soundMap.put(TARGET_SOUND_ID,
-                soundPool.load(context, R.raw.target_hit, 1));
+                soundPool.load(context, R.raw.app_src_main_res_raw_target_hit, 1));
 
         soundMap.put(CANNON_SOUND_ID,
-                soundPool.load(context, R.raw.cannon_fire, 1));
+                soundPool.load(context, R.raw.app_src_main_res_raw_cannon_fire, 1));
         soundMap.put(BLOCKER_SOUND_ID,
-                soundPool.load(context, R.raw.blocker_hit, 1));
+                soundPool.load(context, R.raw.app_src_main_res_raw_blocker_hit, 1));
         textPaint = new Paint();
         backgroundPaint = new Paint();
         backgroundPaint.setColor(Color.WHITE);
@@ -365,8 +365,7 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
                     break;
                 }
             }
-        }
-        else { // remove the Cannonball if it should not be on the screen
+        } else { // remove the Cannonball if it should not be on the screen
             cannon.removeCannonball();
         }
 
@@ -424,8 +423,7 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
             try {
                 cannonThread.join(); // wait for cannonThread to finish
                 retry = false;
-            }
-            catch (InterruptedException e) {
+            } catch (InterruptedException e) {
                 Log.e(TAG, "Thread interrupted", e);
             }
         }
@@ -474,7 +472,7 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
                     // get Canvas for exclusive drawing from this thread
                     canvas = surfaceHolder.lockCanvas(null);
 
-                    synchronized(surfaceHolder) {
+                    synchronized (surfaceHolder) {
                         long currentTime = System.currentTimeMillis();
                         double elapsedTimeMS = currentTime - previousFrameTime;
 
@@ -484,8 +482,7 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
                         drawGameElements(canvas); // draw using the canvas
                         previousFrameTime = currentTime; // update previous time
                     }
-                }
-                finally {
+                } finally {
                     // display canvas's contents on the CannonView
                     // and enable other threads to use the Canvas
                     if (canvas != null)
@@ -496,7 +493,24 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
 
+    // hide system bars and app bar
+    private void hideSystemBars() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_FULLSCREEN |
+                            View.SYSTEM_UI_FLAG_IMMERSIVE);
+    }
 
-
-
+    // show system bars and app bar
+    private void showSystemBars() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+            setSystemUiVisibility(
+                    View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN);
+    }
 }
