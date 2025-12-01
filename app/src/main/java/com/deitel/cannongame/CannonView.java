@@ -25,68 +25,68 @@ import android.view.View;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class CannonView extends SurfaceView implements SurfaceHolder.Callback{
-     private static final String TAG = "CannonView"; // for logging errors
+public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
+    private static final String TAG = "CannonView"; // for logging errors
 
-        // constants for game play
-         public static final int MISS_PENALTY = 2; // seconds deducted on a miss
- public static final int HIT_REWARD = 3; // seconds added on a hit
+    // constants for game play
+    public static final int MISS_PENALTY = 2; // seconds deducted on a miss
+    public static final int HIT_REWARD = 3; // seconds added on a hit
 
-         // constants for the Cannon
-         public static final double CANNON_BASE_RADIUS_PERCENT = 3.0 / 40;
- public static final double CANNON_BARREL_WIDTH_PERCENT = 3.0 / 40;
- public static final double CANNON_BARREL_LENGTH_PERCENT = 1.0 / 10;
+    // constants for the Cannon
+    public static final double CANNON_BASE_RADIUS_PERCENT = 3.0 / 40;
+    public static final double CANNON_BARREL_WIDTH_PERCENT = 3.0 / 40;
+    public static final double CANNON_BARREL_LENGTH_PERCENT = 1.0 / 10;
 
-        // constants for the Cannonball
-         public static final double CANNONBALL_RADIUS_PERCENT = 3.0 / 80;
- public static final double CANNONBALL_SPEED_PERCENT = 3.0 / 2;
+    // constants for the Cannonball
+    public static final double CANNONBALL_RADIUS_PERCENT = 3.0 / 80;
+    public static final double CANNONBALL_SPEED_PERCENT = 3.0 / 2;
 
-        // constants for the Targets
-         public static final double TARGET_WIDTH_PERCENT = 1.0 / 40;
- public static final double TARGET_LENGTH_PERCENT = 3.0 / 20;
- public static final double TARGET_FIRST_X_PERCENT = 3.0 / 5;
- public static final double TARGET_SPACING_PERCENT = 1.0 / 60;
-public static final double TARGET_PIECES = 9;
- public static final double TARGET_MIN_SPEED_PERCENT = 3.0 / 4;
- public static final double TARGET_MAX_SPEED_PERCENT = 6.0 / 4;
+    // constants for the Targets
+    public static final double TARGET_WIDTH_PERCENT = 1.0 / 40;
+    public static final double TARGET_LENGTH_PERCENT = 3.0 / 20;
+    public static final double TARGET_FIRST_X_PERCENT = 3.0 / 5;
+    public static final double TARGET_SPACING_PERCENT = 1.0 / 60;
+    public static final double TARGET_PIECES = 9;
+    public static final double TARGET_MIN_SPEED_PERCENT = 3.0 / 4;
+    public static final double TARGET_MAX_SPEED_PERCENT = 6.0 / 4;
 
-         // constants for the Blocker
-        public static final double BLOCKER_WIDTH_PERCENT = 1.0 / 40;
- public static final double BLOCKER_LENGTH_PERCENT = 1.0 / 4;
- public static final double BLOCKER_X_PERCENT = 1.0 / 2;
- public static final double BLOCKER_SPEED_PERCENT = 1.0;
+    // constants for the Blocker
+    public static final double BLOCKER_WIDTH_PERCENT = 1.0 / 40;
+    public static final double BLOCKER_LENGTH_PERCENT = 1.0 / 4;
+    public static final double BLOCKER_X_PERCENT = 1.0 / 2;
+    public static final double BLOCKER_SPEED_PERCENT = 1.0;
 
-         // text size 1/18 of screen width
-         public static final double TEXT_SIZE_PERCENT = 1.0 / 18;
+    // text size 1/18 of screen width
+    public static final double TEXT_SIZE_PERCENT = 1.0 / 18;
 
-         private CannonThread cannonThread; // controls the game loop
-private Activity activity; // to display Game Over dialog in GUI thread
-private boolean dialogIsDisplayed = false;
+    private CannonThread cannonThread; // controls the game loop
+    private Activity activity; // to display Game Over dialog in GUI thread
+    private boolean dialogIsDisplayed = false;
 
-         // game objects
-         private Cannon cannon;
+    // game objects
+    private Cannon cannon;
     private Blocker blocker;
- private ArrayList<Target> targets;
+    private ArrayList<Target> targets;
 
-         // dimension variables
-         private int screenWidth;
- private int screenHeight;
+    // dimension variables
+    private int screenWidth;
+    private int screenHeight;
 
-         // variables for the game loop and tracking statistics
-         private boolean gameOver; // is the game over?
- private double timeLeft; // time remaining in seconds
- private int shotsFired; // shots the user has fired
- private double totalElapsedTime; // elapsed seconds
+    // variables for the game loop and tracking statistics
+    private boolean gameOver; // is the game over?
+    private double timeLeft; // time remaining in seconds
+    private int shotsFired; // shots the user has fired
+    private double totalElapsedTime; // elapsed seconds
 
-        // constants and variables for managing sounds
-         public static final int TARGET_SOUND_ID = 0;
- public static final int CANNON_SOUND_ID = 1;
- public static final int BLOCKER_SOUND_ID = 2;
+    // constants and variables for managing sounds
+    public static final int TARGET_SOUND_ID = 0;
+    public static final int CANNON_SOUND_ID = 1;
+    public static final int BLOCKER_SOUND_ID = 2;
     private SoundPool soundPool; // plays sound effects
     private SparseIntArray soundMap; // maps IDs to SoundPool
     // Paint variables used when drawing each item on the screen
- private Paint textPaint; // Paint used to draw text
- private Paint backgroundPaint; // Paint used to clear the drawing area
+    private Paint textPaint; // Paint used to draw text
+    private Paint backgroundPaint; // Paint used to clear the drawing area
 
     public CannonView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -98,7 +98,7 @@ private boolean dialogIsDisplayed = false;
         attrBuilder.setUsage(AudioAttributes.USAGE_GAME);
 
         // initialize SoundPool to play the app's three sound effects
-        oundPool.Builder builder = new SoundPool.Builder();
+        SoundPool.Builder builder = new SoundPool.Builder();
         builder.setMaxStreams(1);
         builder.setAudioAttributes(attrBuilder.build());
         soundPool = builder.build();
@@ -106,12 +106,12 @@ private boolean dialogIsDisplayed = false;
         // create Map of sounds and pre-load sounds
         soundMap = new SparseIntArray(3); // create new SparseIntArray
         soundMap.put(TARGET_SOUND_ID,
-        soundPool.load(context, R.raw.target_hit, 1));
+                soundPool.load(context, R.raw.target_hit, 1));
 
         soundMap.put(CANNON_SOUND_ID,
                 soundPool.load(context, R.raw.cannon_fire, 1));
         soundMap.put(BLOCKER_SOUND_ID,
-                 soundPool.load(context, R.raw.blocker_hit, 1));
+                soundPool.load(context, R.raw.blocker_hit, 1));
         textPaint = new Paint();
         backgroundPaint = new Paint();
         backgroundPaint.setColor(Color.WHITE);
@@ -133,12 +133,12 @@ private boolean dialogIsDisplayed = false;
 
     // get width of the game screen
     public int getScreenWidth() {
-         return screenWidth;
-        }
+        return screenWidth;
+    }
 
     // get height of the game screen
     public int getScreenHeight() {
-         return screenHeight;
+        return screenHeight;
     }
 
     // plays a sound with the given soundId in soundMap
@@ -146,4 +146,131 @@ private boolean dialogIsDisplayed = false;
         soundPool.play(soundMap.get(soundId), 1, 1, 1, 0, 1f);
     }
 
+
+    // reset all the screen elements and start a new game
+    public void newGame() {
+        // construct a new Cannon
+        cannon = new Cannon(this,
+                (int) (CANNON_BASE_RADIUS_PERCENT * screenHeight),
+                (int) (CANNON_BARREL_LENGTH_PERCENT * screenWidth),
+                (int) (CANNON_BARREL_WIDTH_PERCENT * screenHeight));
+
+        Random random = new Random(); // for determining random velocities
+        targets = new ArrayList<>(); // construct a new Target list
+
+        // initialize targetX for the first Target from the left
+        int targetX = (int) (TARGET_FIRST_X_PERCENT * screenWidth);
+
+        // calculate Y coordinate of Targets
+        int targetY = (int) ((0.5 - TARGET_LENGTH_PERCENT / 2) *
+                screenHeight);
+
+        // add TARGET_PIECES Targets to the Target list
+        for (int n = 0; n < TARGET_PIECES; n++) {
+
+            // determine a random velocity between min and max values
+            // for Target n
+            double velocity = screenHeight * (random.nextDouble() *
+                    (TARGET_MAX_SPEED_PERCENT - TARGET_MIN_SPEED_PERCENT) +
+                    TARGET_MIN_SPEED_PERCENT);
+
+            // alternate Target colors between dark and light
+            int color = (n % 2 == 0) ?
+                    getResources().getColor(R.color.dark,
+                            getContext().getTheme()) :
+                    getResources().getColor(R.color.light,
+                            getContext().getTheme());
+
+            velocity *= -1; // reverse the initial velocity for next Target
+
+            // create and add a new Target to the Target list
+            targets.add(new Target(this, color, HIT_REWARD, targetX, targetY,
+                    (int) (TARGET_WIDTH_PERCENT * screenWidth),
+                    (int) (TARGET_LENGTH_PERCENT * screenHeight),
+                    (int) velocity));
+
+            // increase the x coordinate to position the next Target more
+            // to the right
+            targetX += (TARGET_WIDTH_PERCENT + TARGET_SPACING_PERCENT) *
+                    screenWidth;
+        }
+
+        // create a new Blocker
+        blocker = new Blocker(this, Color.BLACK, MISS_PENALTY,
+                (int) (BLOCKER_X_PERCENT * screenWidth),
+                (int) ((0.5 - BLOCKER_LENGTH_PERCENT / 2) * screenHeight),
+                (int) (BLOCKER_WIDTH_PERCENT * screenWidth),
+                (int) (BLOCKER_LENGTH_PERCENT * screenHeight),
+                (float) (BLOCKER_SPEED_PERCENT * screenHeight));
+
+        timeLeft = 10; // start the countdown at 10 seconds
+
+        shotsFired = 0; // set the initial number of shots fired
+        totalElapsedTime = 0.0; // set the time elapsed to zero
+
+        if (gameOver) {// start a new game after the last game ended
+            gameOver = false; // the game is not over
+
+        }
+
+        hideSystemBars();
+    }
+
+    // called repeatedly by the CannonThread to update game elements
+    private void updatePositions(double elapsedTimeMS) {
+        double interval = elapsedTimeMS / 1000.0; // convert to seconds
+
+        // update cannonball's position if it is on the screen
+        if (cannon.getCannonball() != null)
+            cannon.getCannonball().update(interval);
+
+        blocker.update(interval); // update the blocker's position
+
+        for (GameElement target : targets)
+            target.update(interval); // update the target's position
+
+        timeLeft -= interval; // subtract from time left
+
+        // if the timer reached zero
+        if (timeLeft <= 0) {
+            timeLeft = 0.0;
+            gameOver = true; // the game is over
+            cannonThread.setRunning(false); // terminate thread
+            showGameOverDialog(R.string.lose); // show the losing dialog
+        }
+
+        // if all pieces have been hit
+        if (targets.isEmpty()) {
+            cannonThread.setRunning(false); // terminate thread
+            showGameOverDialog(R.string.win); // show winning dialog
+            gameOver = true;
+        }
+    }
+
+    // aligns the barrel and fires a Cannonball if a Cannonball is not
+    // already on the screen
+    public void alignAndFireCannonball(MotionEvent event) {
+        // get the location of the touch in this view
+        Point touchPoint = new Point((int) event.getX(),
+                (int) event.getY());
+
+        // compute the touch's distance from center of the screen
+        // on the y-axis
+        double centerMinusY = (screenHeight / 2 - touchPoint.y);
+
+        double angle = 0; // initialize angle to 0
+
+        // calculate the angle the barrel makes with the horizontal
+        angle = Math.atan2(touchPoint.x, centerMinusY);
+
+        // point the barrel at the point where the screen was touched
+        cannon.align(angle);
+
+        // fire Cannonball if there is not already a Cannonball on screen
+        if (cannon.getCannonball() == null || !cannon.getCannonball().isOnScreen()) {
+            cannon.fireCannonball();
+            ++shotsFired;
+        }
+
+    }
 }
