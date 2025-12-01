@@ -345,6 +345,44 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
             target.draw(canvas);
     }
 
+    // checks if the ball collides with the Blocker or any of the Targets
+    // and handles the collisions
+    public void testForCollisions() {
+        // remove any of the targets that the Cannonball
+        // collides with
+        if (cannon.getCannonball() != null &&
+                cannon.getCannonball().isOnScreen()) {
+            for (int n = 0; n < targets.size(); n++) {
+                if (cannon.getCannonball().collidesWith(targets.get(n))) {
+                    targets.get(n).playSound(); // play Target hit sound
+
+                    // add hit rewards time to remaining time
+                    timeLeft += targets.get(n).getHitReward();
+
+                    cannon.removeCannonball(); // remove Cannonball from game
+                    targets.remove(n); // remove the Target that was hit
+                    --n; // ensures that we don't skip testing new target n
+                    break;
+                }
+            }
+        }
+        else { // remove the Cannonball if it should not be on the screen
+            cannon.removeCannonball();
+        }
+
+        // check if ball collides with blocker
+        if (cannon.getCannonball() != null &&
+                cannon.getCannonball().collidesWith(blocker)) {
+            blocker.playSound(); // play Blocker hit sound
+
+            // reverse ball direction
+            cannon.getCannonball().reverseVelocityX();
+
+            // deduct blocker's miss penalty from remaining time
+            timeLeft -= blocker.getMissPenalty();
+        }
+    }
+
 
 
 
