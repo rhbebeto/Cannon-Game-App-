@@ -1,10 +1,15 @@
 package com.deitel.cannongame;
 
 import android.app.Activity;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
 import android.content.Context;
+
+import androidx.fragment.app.DialogFragment;
+import androidx.appcompat.app.AlertDialog;
+
+import android.app.Dialog;
+
+import androidx.appcompat.app.AppCompatActivity;
+
 import android.content.DialogInterface;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -21,6 +26,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
+import android.annotation.SuppressLint;
 
 import java.util.ArrayList;
 import java.util.Random;
@@ -208,9 +214,13 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
         shotsFired = 0; // set the initial number of shots fired
         totalElapsedTime = 0.0; // set the time elapsed to zero
 
-        if (gameOver) {// start a new game after the last game ended
+        if (gameOver) { // start a new game after the last game ended
             gameOver = false; // the game is not over
 
+            // --- REINICIA O MOTOR DO JOGO ---
+            cannonThread = new CannonThread(getHolder());
+            cannonThread.setRunning(true);
+            cannonThread.start();
         }
 
         hideSystemBars();
@@ -231,19 +241,19 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
 
         timeLeft -= interval; // subtract from time left
 
-        // if the timer reached zero
-        if (timeLeft <= 0) {
+        // Se o tempo acabou E o jogo AINDA NÃO acabou (trava de segurança)
+        if (timeLeft <= 0.0 && !gameOver) {
             timeLeft = 0.0;
-            gameOver = true; // the game is over
-            cannonThread.setRunning(false); // terminate thread
-            showGameOverDialog(R.string.lose); // show the losing dialog
+            gameOver = true; // <--- ATIVA A TRAVA
+            cannonThread.setRunning(false);
+            showGameOverDialog(R.string.lose);
         }
 
-        // if all pieces have been hit
-        if (targets.isEmpty()) {
-            cannonThread.setRunning(false); // terminate thread
-            showGameOverDialog(R.string.win); // show winning dialog
-            gameOver = true;
+        // Se destruiu todos os alvos E o jogo AINDA NÃO acabou
+        if (targets.isEmpty() && !gameOver) {
+            gameOver = true; // <--- ATIVA A TRAVA
+            cannonThread.setRunning(false);
+            showGameOverDialog(R.string.win);
         }
     }
 
@@ -275,50 +285,42 @@ public class CannonView extends SurfaceView implements SurfaceHolder.Callback {
     }
 
     // display an AlertDialog when the game ends
+    // display an AlertDialog when the game ends
     private void showGameOverDialog(final int messageId) {
-        // DialogFragment to display game stats and start new game
-        final DialogFragment gameResult =
-                new DialogFragment() {
-                    // create an AlertDialog and return it
-                    @Override
-                    public Dialog onCreateDialog(Bundle bundle) {
-                        // create dialog displaying String resource for messageId
-                        AlertDialog.Builder builder =
-                                new AlertDialog.Builder(getActivity());
-                        builder.setTitle(getResources().getString(messageId));
+        // Executa na Thread Principal (Obrigatório para UI)
+        activity.runOnUiThread(new Runnable() {
+            public void run() {
+                // Segurança: Se a tela já estiver fechando, não faz nada
+                if (activity.isFinishing()) return;
 
-                        // display number of shots fired and total time elapsed
-                        builder.setMessage(getResources().getString(
-                                R.string.results_format, shotsFired, totalElapsedTime));
+                showSystemBars(); // Mostra as barras do Android
+                dialogIsDisplayed = true;
 
-                        // Set the Positive Button (Reset Game)
-                        builder.setPositiveButton(R.string.reset_game,
-                                new DialogInterface.OnClickListener() {
-                                    // called when "Reset Game" Button is pressed
-                                    @Override
-                                    public void onClick(DialogInterface dialog,
-                                                        int which) {
-                                        dialogIsDisplayed = false;
-                                        newGame(); // set up and start a new game
-                                    }
-                                }
-                        );
+                // CRIAÇÃO SIMPLIFICADA DO DIÁLOGO (Sem DialogFragment)
+                AlertDialog.Builder builder = new AlertDialog.Builder(activity);
 
-                        return builder.create(); // return the AlertDialog
-                    }
-                };
+                // Configura Título e Mensagem
+                builder.setTitle(getResources().getString(messageId));
+                builder.setMessage(getResources().getString(
+                        R.string.results_format, shotsFired, totalElapsedTime));
 
-        // in GUI thread, use FragmentManager to display the DialogFragment
-        activity.runOnUiThread(
-                new Runnable() {
-                    public void run() {
-                        showSystemBars(); // exit immersive mode
-                        dialogIsDisplayed = true;
-                        gameResult.setCancelable(false); // modal dialog
-                        gameResult.show(activity.getFragmentManager(), "results");
-                    }
-                }
-        );
+                // Configura o Botão de Reiniciar
+                builder.setPositiveButton(R.string.reset_game,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialogIsDisplayed = false;
+                                newGame(); // Reinicia o jogo
+                            }
+                        }
+                );
+
+                // Impede de fechar clicando fora
+                builder.setCancelable(false);
+
+                // MOSTRA O DIÁLOGO DIRETAMENTE
+                builder.show();
+            }
+        });
     }
 
     // draws the game to the given Canvas
