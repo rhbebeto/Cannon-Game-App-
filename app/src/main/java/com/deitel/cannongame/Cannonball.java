@@ -36,23 +36,25 @@ import android.graphics.Rect;
              velocityX *= -1;
              }
         // updates the Cannonball's position
-         @Override
-         public void update(double interval) {
-             super.update(interval); // updates Cannonball's vertical position
+        @Override
+        public void update(double interval) {
+            super.update(interval);
+            shape.offset((int) (velocityX * interval), 0);
 
-             // update horizontal position
-             shape.offset((int) (velocityX * interval), 0);
-             // if Cannonball goes off the screen
-             if (shape.top < 0 || shape.left < 0 ||
-                     shape.bottom > view.getScreenHeight() ||
-                     shape.right > view.getScreenWidth())
-                 onScreen = false; // set it to be removed
-             }
+            if (shape.top < 0 || shape.right < 0 ||
+                    shape.bottom > view.getScreenHeight() ||
+                    shape.right > view.getScreenWidth()) {
+                onScreen = false;
+            }
+        }
 
          // draws the Cannonball on the given canvas
          @Override
          public void draw(Canvas canvas) {
+             // Desenha um círculo usando o raio e a tinta configurada
              canvas.drawCircle(shape.left + getRadius(),
-                     shape.top + getRadius(), getRadius(), paint);
+                     shape.top + getRadius(),
+                     getRadius(),
+                     paint);
          }
 }
